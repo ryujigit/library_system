@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa; color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); z-index:1000;
+        }
+
+        .sidebar-header { padding: 20px 10px; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
+        .sidebar-header h2 { font-size:22px; margin-bottom:5px; }
+        .sidebar-header p { font-size:13px; opacity:0.8; }
+
+        .nav-menu { list-style:none; }
+        .nav-item { margin-bottom:5px; }
+        .nav-link {
+            display:flex; align-items:center; padding:12px 15px; color:white; text-decoration:none;
+            border-radius:8px; transition: all .3s ease; cursor:pointer; font-size:15px;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.15); transform: translateX(5px); }
+        .nav-link.active { background: rgba(255,255,255,0.25); font-weight:600; }
+        .nav-link span { margin-right:12px; font-size:18px; }
+
+        /* Main Content */
+        .main-content { margin-left:260px; padding:30px; min-height:100vh; }
+        .header {
+            background:white; padding:20px 30px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom:30px; display:flex; justify-content:space-between; align-items:center;
+        }
+        .header h1 { color:#667eea; font-size:28px; }
+        .logout-btn {
+            padding:10px 20px; background:#f44336; color:white; border:none; border-radius:8px; cursor:pointer;
+            font-size:14px; transition: all .3s ease;
+        }
+        .logout-btn:hover { background:#d32f2f; transform: translateY(-2px); }
+
+        /* Sections and Cards */
+        .section { display:none; animation: fadeIn .4s ease; }
+        .section.active { display:block; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform: translateY(0);} }
+
+        .card { background:white; border-radius:12px; padding:25px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card h2 { color:#667eea; margin-bottom:20px; font-size:22px; border-bottom:2px solid #f0f0f0; padding-bottom:10px; }
+
+        /* Choice Buttons */
+        .choice-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .choice-btn {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+            transition: all .3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .choice-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .choice-btn span {
+            font-size: 20px;
+        }
+
+        /* Dynamic Form Container */
+        .dynamic-content {
+            display: none;
+            animation: slideIn .3s ease;
+        }
+
+        .dynamic-content.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom:20px; }
+        .form-group label { display:block; margin-bottom:8px; font-weight:500; color:#555; font-size:14px; }
+        .form-group input, .form-group select {
+            width:100%; padding:12px 15px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px;
+            transition: all .3s ease; background:#f8f9fa;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline:none; border-color:#667eea; background:white; box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .form-row { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; }
+
+        button[type="submit"], .btn-primary {
+            padding:12px 24px; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none;
+            border-radius:8px; cursor:pointer; font-size:15px; font-weight:600; transition: all .3s ease; margin-top:10px;
+        }
+        button[type="submit"]:hover, .btn-primary:hover { transform: translateY(-2px); box-shadow:0 10px 25px rgba(102,126,234,0.4); }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+        }
+
+        /* Book List */
+        .book-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top:20px; }
+        .book-card {
+            background:white; border:1px solid #e0e0e0; border-radius:10px; padding:20px; transition: all .3s ease;
+        }
+        .book-card:hover { box-shadow:0 5px 20px rgba(0,0,0,0.1); transform: translateY(-3px); }
+        .book-card h3 { color:#667eea; margin-bottom:10px; font-size:18px; }
+        .book-card p { margin:5px 0; color:#666; font-size:14px; }
+        .book-card strong { color:#333; }
+
+        /* Member Styles */
+        .member-list { margin-top:20px; }
+        .member-item { background:#f8f9fa; border-left:4px solid #667eea; padding:15px; margin-bottom:15px; border-radius:8px; }
+        .member-item strong { color:#667eea; }
+
+        /* Profile */
+        .profile-card { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border-radius:12px; padding:30px; margin-bottom:20px; }
+        .profile-header { display:flex; align-items:center; gap:20px; margin-bottom:20px; }
+        .profile-avatar { width:80px; height:80px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:36px; color:#667eea; }
+        .profile-info h2 { font-size:26px; margin-bottom:5px; }
+        .profile-info p { opacity:0.9; font-size:14px; }
+        .profile-details { display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin-top:20px; }
+        .profile-detail-item { background: rgba(255,255,255,0.15); padding:15px; border-radius:8px; backdrop-filter: blur(10px); }
+        .profile-detail-item label { font-size:12px; opacity:0.8; display:block; margin-bottom:5px; }
+        .profile-detail-item p { font-size:16px; font-weight:600; }
+
+        /* Alerts */
+        .alert { padding:15px 20px; border-radius:8px; margin-bottom:20px; display:none; }
+        .alert.show { display:block; animation: slideDown .3s ease; }
+        @keyframes slideDown { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+        .alert-success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+        .alert-error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+
+        /* Responsive */
+        @media (max-width:768px) {
+            .sidebar { width:200px; }
+            .main-content { margin-left:200px; padding:20px; }
+            .header { flex-direction:column; gap:15px; }
+            .book-grid { grid-template-columns:1fr; }
+        }
+        @media (max-width:480px) {
+            .sidebar { transform: translateX(-100%); transition: transform .3s ease; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left:0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>📚 Library System</h2>
+            <p>Admin Panel</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a class="nav-link active" data-section="profile"><span>👤</span> Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-section="books"><span>📖</span> View All Books</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-section="members"><span>👥</span> Member Management</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-section="transactions"><span>🔄</span> Book Transactions</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="section active" id="profile">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">👨‍💼</div>
+                    <div class="profile-info">
+                        <h2 id="profileName">Admin</h2>
+                        <p>System Administrator</p>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <div class="profile-detail-item">
+                        <label>Admin ID</label>
+                        <p id="profileId">Loading...</p>
+                    </div>
+                    <div class="profile-detail-item">
+                        <label>Role</label>
+                        <p id="profileRole">Administrator</p>
+                    </div>
+                    <div class="profile-detail-item">
+                        <label>Login Time</label>
+                        <p id="profileTime">-</p>
+                    </div>
+                    <div class="profile-detail-item">
+                        <label>Status</label>
+                        <p>🟢 Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Books Section -->
+        <div class="section" id="books">
+            <div class="card">
+                <h2>📚 All Books in Library</h2>
+                <div id="bookList" class="book-grid"></div>
+            </div>
+        </div>
+
+        <!-- Members Section -->
+        <div class="section" id="members">
+            <div class="card">
+                <h2>👥 Member Management</h2>
+                <p style="color: #666; margin-bottom: 20px;">Select an action to manage library members</p>
+                
+                <div class="choice-container">
+                    <button class="choice-btn" onclick="showMemberAction('add')">
+                        <span>➕</span> Add New Member
+                    </button>
+                    <button class="choice-btn" onclick="showMemberAction('search')">
+                        <span>🔍</span> Search Member
+                    </button>
+                    <button class="choice-btn" onclick="showMemberAction('delete')">
+                        <span>❌</span> Delete Member
+                    </button>
+                </div>
+
+                <!-- Add Member Form -->
+                <div id="addMemberContent" class="dynamic-content">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">➕ Add New Member</h3>
+                    <div class="alert alert-success" id="memberAddAlert"></div>
+                    <form id="addMemberForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Member ID</label><input type="text" name="id" required/></div>
+                            <div class="form-group"><label>Name</label><input type="text" name="name" required/></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Email</label><input type="email" name="email" required/></div>
+                            <div class="form-group"><label>Phone</label><input type="tel" name="phone" required/></div>
+                        </div>
+                        <div class="form-group"><label>Password</label><input type="password" name="password" required/></div>
+                        <button type="submit">Add Member</button>
+                    </form>
+                </div>
+
+                <!-- Search Member Form -->
+                <div id="searchMemberContent" class="dynamic-content">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🔍 Search Member</h3>
+                    <form id="searchMemberForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Member ID</label><input type="text" name="memberinfo" required/></div>
+                            <div class="form-group" style="display:flex; align-items:flex-end;"><button type="submit">Search</button></div>
+                        </div>
+                    </form>
+                    <div id="memberInfo" class="member-list"></div>
+                </div>
+
+                <!-- Delete Member Form -->
+                <div id="deleteMemberContent" class="dynamic-content">
+                    <h3 style="color: #f44336; margin-bottom: 15px;">❌ Delete Member</h3>
+                    <div class="alert alert-error" id="memberDeleteAlert"></div>
+                    <form id="deleteMemberForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Member ID</label><input type="text" name="id" required/></div>
+                            <div class="form-group" style="display:flex; align-items:flex-end;">
+                                <button type="submit" class="btn-danger" style="background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);">Delete Member</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Section -->
+        <div class="section" id="transactions">
+            <div class="card">
+                <h2>🔄 Book Transactions</h2>
+                <p style="color: #666; margin-bottom: 20px;">Select a transaction type to manage books</p>
+                
+                <div class="choice-container">
+                    <button class="choice-btn" onclick="showTransactionAction('issue')">
+                        <span>📤</span> Issue Book
+                    </button>
+                    <button class="choice-btn" onclick="showTransactionAction('return')">
+                        <span>📥</span> Return Book
+                    </button>
+                    <button class="choice-btn" onclick="showTransactionAction('search')">
+                        <span>🔎</span> Search Books
+                    </button>
+                    <button class="choice-btn" onclick="showTransactionAction('add')">
+                        <span>➕</span> Add New Book
+                    </button>
+                </div>
+
+                <!-- Issue Book Form -->
+                <div id="issueBookContent" class="dynamic-content">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📤 Issue Book</h3>
+                    <div class="alert alert-success" id="issueAlert"></div>
+                    <form id="issueBookForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Loan ID</label><input type="text" name="loanid" required/></div>
+                            <div class="form-group"><label>Member ID</label><input type="text" name="memberid" required/></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Book ID</label><input type="text" name="bookid" required/></div>
+                            <div class="form-group"><label>Issue Date</label><input type="date" name="issuedate" required/></div>
+                        </div>
+                        <button type="submit">Issue Book</button>
+                    </form>
+                </div>
+
+                <!-- Return Book Form -->
+                <div id="returnBookContent" class="dynamic-content">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📥 Return Book</h3>
+                    <div class="alert alert-success" id="returnAlert"></div>
+                    <form id="returnBookForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Book ID</label><input type="text" name="bookid" required/></div>
+                            <div class="form-group"><label>Member ID</label><input type="text" name="memberid" required/></div>
+                        </div>
+                        <div class="form-group"><label>Return Date</label><input type="date" name="returnDate" required/></div>
+                        <button type="submit">Return Book</button>
+                    </form>
+                </div>
+
+                <!-- Search Book Form -->
+                <div id="searchBookContent" class="dynamic-content">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🔎 Search Books</h3>
+                    <form id="searchBookForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Search By</label>
+                                <select name="choice" required>
+                                    <option value="">Select By</option>
+                                    <option value="author">Author</option>
+                                    <option value="title">Title</option>
+                                    <option value="id">Book ID</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Search Term</label><input type="text" name="Search" required/></div>
+                            <div class="form-group" style="display:flex; align-items:flex-end;"><button type="submit">Search</button></div>
+                        </div>
+                    </form>
+                    <div id="searchResults" class="book-grid"></div>
+                </div>
+
+                <!-- Add Book Form -->
+                <div id="addBookContent" class="dynamic-content">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">➕ Add New Book</h3>
+                    <div class="alert alert-success" id="bookAddAlert"></div>
+                    <form id="addBookForm">
+                        <div class="form-row">
+                            <div class="form-group"><label>Book ID</label><input type="text" name="id" required/></div>
+                            <div class="form-group"><label>Title</label><input type="text" name="title" required/></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Author</label><input type="text" name="author" required/></div>
+                            <div class="form-group"><label>Total Copies</label><input type="number" name="total_copies" required/></div>
+                        </div>
+                        <button type="submit">Add Book</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ------- Utility helpers -------
+        function safeJSONParse(str, fallback = null) {
+            try { return JSON.parse(str); } catch (e) { return fallback; }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showAlert(elementId, message, isError = false) {
+            const alert = document.getElementById(elementId);
+            if (!alert) return;
+            alert.textContent = message;
+            alert.className = isError ? 'alert alert-error show' : 'alert alert-success show';
+            setTimeout(() => {
+                if (alert) {
+                    alert.className = isError ? 'alert alert-error' : 'alert alert-success';
+                }
+            }, 5000);
+        }
+
+        // ------- Choice Management -------
+        function showMemberAction(action) {
+            // Hide all member content sections
+            document.querySelectorAll('#members .dynamic-content').forEach(el => el.classList.remove('show'));
+            
+            // Update button states
+            document.querySelectorAll('#members .choice-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.choice-btn').classList.add('active');
+            
+            // Show selected content
+            const contentMap = {
+                'add': 'addMemberContent',
+                'search': 'searchMemberContent',
+                'delete': 'deleteMemberContent'
+            };
+            
+            const targetId = contentMap[action];
+            if (targetId) {
+                document.getElementById(targetId).classList.add('show');
+            }
+        }
+
+        function showTransactionAction(action) {
+            // Hide all transaction content sections
+            document.querySelectorAll('#transactions .dynamic-content').forEach(el => el.classList.remove('show'));
+            
+            // Update button states
+            document.querySelectorAll('#transactions .choice-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.choice-btn').classList.add('active');
+            
+            // Show selected content
+            const contentMap = {
+                'issue': 'issueBookContent',
+                'return': 'returnBookContent',
+                'search': 'searchBookContent',
+                'add': 'addBookContent'
+            };
+            
+            const targetId = contentMap[action];
+            if (targetId) {
+                document.getElementById(targetId).classList.add('show');
+            }
+        }
+
+        // ------- Profile / session -------
+        function loadProfile() {
+            const raw = sessionStorage.getItem('userProfile');
+            const data = safeJSONParse(raw, null);
+
+            if (!data) {
+                const idEl = document.getElementById('profileId');
+                if (idEl) idEl.textContent = 'Not logged in';
+                return;
+            }
+
+            document.getElementById('profileId').textContent = data.userId || data.id || 'N/A';
+            document.getElementById('profileName').textContent = data.name || data.username || 'Admin';
+            document.getElementById('profileRole').textContent = (data.role === 'admins' || data.role === 'admin') ? 'Administrator' : (data.role || 'Member');
+
+            if (data.timestamp) {
+                const loginTime = new Date(Number(data.timestamp));
+                if (!isNaN(loginTime)) document.getElementById('profileTime').textContent = loginTime.toLocaleString();
+            } else if (data.loginAt) {
+                const loginTime = new Date(Number(data.loginAt));
+                if (!isNaN(loginTime)) document.getElementById('profileTime').textContent = loginTime.toLocaleString();
+            }
+        }
+
+        // ------- Logout -------
+        async function logout() {
+            sessionStorage.removeItem('userProfile');
+            window.location.href = "/"
+        }
+
+        // ------- Navigation -------
+        function initNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const sectionId = this.getAttribute('data-section');
+                    if (!sectionId) return;
+                    document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                    const target = document.getElementById(sectionId);
+                    if (target) target.classList.add('active');
+
+                    if (sectionId === 'books') loadBooks();
+                });
+            });
+        }
+
+        // ------- Books -------
+        async function loadBooks() {
+            const bookListDiv = document.getElementById('bookList');
+            if (!bookListDiv) return;
+
+            bookListDiv.innerHTML = '<p>Loading...</p>';
+            try {
+                const res = await fetch('/admin/get_books', { method: 'POST', headers: { 'Content-Type': 'application/json' }});
+                const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid JSON from server' }));
+                if (data && data.status === 'success' && Array.isArray(data.books) && data.books.length > 0) {
+                    bookListDiv.innerHTML = data.books.map(book => `
+                        <div class="book-card">
+                            <h3>${escapeHtml(book.title || 'Untitled')}</h3>
+                            <p><strong>Book ID:</strong> ${escapeHtml(book.book_id || book.id || '')}</p>
+                            <p><strong>Author:</strong> ${escapeHtml(book.author || 'Unknown')}</p>
+                            <p><strong>Total Copies:</strong> ${escapeHtml(String(book.total_copies || 0))}</p>
+                            <p><strong>Available:</strong> ${escapeHtml(String(book.available_copies || 0))}</p>
+                        </div>
+                    `).join('');
+                } else if (data && Array.isArray(data.books) && data.books.length === 0) {
+                    bookListDiv.innerHTML = '<p>No books available.</p>';
+                } else if (data && Array.isArray(data.data) && data.data.length > 0) {
+                    bookListDiv.innerHTML = data.data.map(book => `
+                        <div class="book-card">
+                            <h3>${escapeHtml(book.title || 'Untitled')}</h3>
+                            <p><strong>Book ID:</strong> ${escapeHtml(book.book_id || book.id || '')}</p>
+                            <p><strong>Author:</strong> ${escapeHtml(book.author || 'Unknown')}</p>
+                            <p><strong>Total Copies:</strong> ${escapeHtml(String(book.total_copies || 0))}</p>
+                            <p><strong>Available:</strong> ${escapeHtml(String(book.available_copies || 0))}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    bookListDiv.innerHTML = `<p>${escapeHtml((data && data.message) ? data.message : 'No books available.')}</p>`;
+                }
+            } catch (err) {
+                console.error('Error loading books:', err);
+                bookListDiv.innerHTML = '<p>Error loading books.</p>';
+            }
+        }
+
+        // ------- Add Book -------
+        (function attachAddBook() {
+            const form = document.getElementById('addBookForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    book_id: e.target.elements['id'].value.trim(),
+                    title: e.target.elements['title'].value.trim(),
+                    author: e.target.elements['author'].value.trim(),
+                    total_copies: Number(e.target.elements['total_copies'].value) || 0
+                };
+                try {
+                    const res = await fetch('/admin/insertBook', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+                    showAlert('bookAddAlert', data.message || 'Unknown response', data.status !== 'success');
+                    if (data.status === 'success') {
+                        e.target.reset();
+                        loadBooks();
+                    }
+                } catch (err) {
+                    console.error('Add book error:', err);
+                    showAlert('bookAddAlert', 'Error adding book', true);
+                }
+            });
+        })();
+
+        // ------- Add Member -------
+        (function attachAddMember() {
+            const form = document.getElementById('addMemberForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const memberData = {
+                    member_id: e.target.elements['id'].value.trim(),
+                    name: e.target.elements['name'].value.trim(),
+                    email: e.target.elements['email'].value.trim(),
+                    phone: e.target.elements['phone'].value.trim(),
+                    password: e.target.elements['password'].value
+                };
+                try {
+                    const res = await fetch('/admin/addmember', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(memberData)
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+                    showAlert('memberAddAlert', data.message || 'Unknown response', data.status !== 'success');
+                    if (data.status === 'success') e.target.reset();
+                } catch (err) {
+                    console.error('Add member error:', err);
+                    showAlert('memberAddAlert', 'Error adding member', true);
+                }
+            });
+        })();
+
+        // ------- Delete Member -------
+        (function attachDeleteMember() {
+            const form = document.getElementById('deleteMemberForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = { member_id: e.target.elements['id'].value.trim() };
+                try {
+                    const res = await fetch('/admin/deletemember', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+                    showAlert('memberDeleteAlert', data.message || 'Unknown response', data.status !== 'success');
+                    if (data.status === 'success') e.target.reset();
+                } catch (err) {
+                    console.error('Delete member error:', err);
+                    showAlert('memberDeleteAlert', 'Error deleting member', true);
+                }
+            });
+        })();
+
+        // ------- Search Member -------
+        (function attachSearchMember() {
+            const form = document.getElementById('searchMemberForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const memberId = e.target.elements['memberinfo'].value.trim();
+                const memberInfoDiv = document.getElementById('memberInfo');
+                if (!memberInfoDiv) return;
+
+                memberInfoDiv.innerHTML = '<p>Loading...</p>';
+                try {
+                    const res = await fetch('/admin/member_info', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ member_id: memberId })
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+                    if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+                        memberInfoDiv.innerHTML = data.data.map(member => `
+                            <div class="member-item">
+                                <p><strong>Member ID:</strong> ${escapeHtml(member.member_id || '')}</p>
+                                <p><strong>Name:</strong> ${escapeHtml(member.name || '')}</p>
+                                <p><strong>Email:</strong> ${escapeHtml(member.email || '')}</p>
+                                <p><strong>Phone:</strong> ${escapeHtml(member.phone || '')}</p>
+                                <p><strong>Issued Books:</strong> ${escapeHtml(String(member.issued_books || 0))}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        memberInfoDiv.innerHTML = `<p>${escapeHtml((data && data.message) ? data.message : 'No member found with that ID.')}</p>`;
+                    }
+                } catch (err) {
+                    console.error('Search member error:', err);
+                    memberInfoDiv.innerHTML = '<p>Error fetching member info.</p>';
+                }
+            });
+        })();
+
+        // ------- Issue Book -------
+        (function attachIssueBook() {
+            const form = document.getElementById('issueBookForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    loan_id: e.target.elements['loanid'].value.trim(),
+                    member_id: e.target.elements['memberid'].value.trim(),
+                    book_id: e.target.elements['bookid'].value.trim(),
+                    issue_date: e.target.elements['issuedate'].value
+                };
+                try {
+                    const res = await fetch('/admin/issue_book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+                    showAlert('issueAlert', data.message || 'Unknown response', data.status !== 'success');
+                    if (data.status === 'success') e.target.reset();
+                } catch (err) {
+                    console.error('Issue book error:', err);
+                    showAlert('issueAlert', 'Error issuing book', true);
+                }
+            });
+        })();
+
+        // ------- Return Book -------
+        (function attachReturnBook() {
+            const form = document.getElementById('returnBookForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    rdate: e.target.elements['returnDate'].value,
+                    bookid: e.target.elements['bookid'].value.trim(),
+                    memberid: e.target.elements['memberid'].value.trim()
+                };
+                try {
+                    const res = await fetch('/admin/return_book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+                    showAlert('returnAlert', data.message || 'Unknown response', data.status !== 'success');
+                    if (data.status === 'success') e.target.reset();
+                } catch (err) {
+                    console.error('Return book error:', err);
+                    showAlert('returnAlert', 'Error returning book', true);
+                }
+            });
+        })();
+
+        // ------- Search Book -------
+        (function attachSearchBook() {
+            const form = document.getElementById('searchBookForm');
+            if (!form) return;
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const searchValue = e.target.elements['Search'].value.trim();
+                const choice = e.target.elements['choice'].value;
+                const searchResults = document.getElementById('searchResults');
+                if (!searchResults) return;
+
+                let payload = { choice: choice };
+                if (choice === 'author') payload.author = searchValue;
+                else if (choice === 'title') payload.title = searchValue;
+                else if (choice === 'id') payload.id = searchValue;
+
+                searchResults.innerHTML = '<p>Searching...</p>';
+                try {
+                    const res = await fetch('/admin/search_Book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({ status: 'error', message: 'Invalid server response' }));
+
+                    if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+                        searchResults.innerHTML = data.data.map(book => `
+                            <div class="book-card">
+                                <h3>${escapeHtml(book.title || 'Untitled')}</h3>
+                                <p><strong>Book ID:</strong> ${escapeHtml(book.book_id || book.id || '')}</p>
+                                <p><strong>Author:</strong> ${escapeHtml(book.author || 'Unknown')}</p>
+                                <p><strong>Total Copies:</strong> ${escapeHtml(String(book.total_copies || 0))}</p>
+                                <p><strong>Available:</strong> ${escapeHtml(String(book.available_copies || 0))}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        searchResults.innerHTML = `<p>${escapeHtml((data && data.message) ? data.message : 'No books found.')}</p>`;
+                    }
+                } catch (err) {
+                    console.error('Search book error:', err);
+                    searchResults.innerHTML = '<p>Error searching books.</p>';
+                }
+            });
+        })();
+
+        // ------- Initialize -------
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfile();
+            initNavigation();
+        });
+    </script>
+</body>
+</html>

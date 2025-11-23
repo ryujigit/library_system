@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Member / Admin Login</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+.split-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+.left-section {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%),
+                url('background.jpg') center/cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 80px 60px;
+    color: white;
+    position: relative;
+}
+
+.left-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    filter: blur(0px);
+    z-index: -1;
+}
+
+.welcome-text {
+    animation: fadeInDown 1s ease-out;
+}
+
+.welcome-text h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-text p {
+    font-size: 20px;
+    opacity: 0.95;
+    font-weight: 300;
+}
+
+.quotes-section {
+    margin-top: 60px;
+    animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.quote-container {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.quote-text {
+    font-size: 22px;
+    line-height: 1.6;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeInOut 8s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; transform: translateY(10px); }
+    10%, 90% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.right-section {
+    flex: 0 0 480px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-header h2 {
+    font-size: 32px;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    font-size: 14px;
+    color: #666;
+}
+
+.login-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.response-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    display: none;
+}
+
+.response-box.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.response-box.error {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.response-box.success {
+    background: #efe;
+    color: #3c3;
+    border: 1px solid #cfc;
+}
+
+.response-box.info {
+    background: #eef;
+    color: #33c;
+    border: 1px solid #ccf;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .split-container {
+        flex-direction: column;
+    }
+    
+    .left-section {
+        flex: 0 0 40%;
+        padding: 40px 30px;
+    }
+    
+    .welcome-text h1 {
+        font-size: 36px;
+    }
+    
+    .quotes-section {
+        margin-top: 30px;
+    }
+    
+    .quote-text {
+        font-size: 18px;
+    }
+    
+    .right-section {
+        flex: 1;
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .left-section {
+        padding: 30px 20px;
+    }
+    
+    .welcome-text h1 {
+        font-size: 28px;
+    }
+    
+    .welcome-text p {
+        font-size: 16px;
+    }
+    
+    .quote-container {
+        padding: 20px;
+        min-height: 120px;
+    }
+    
+    .quote-text {
+        font-size: 16px;
+    }
+    
+    .login-header h2 {
+        font-size: 24px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="split-container">
+    <!-- Left Section -->
+    <div class="left-section">
+        <div class="welcome-text">
+            <h1>📚 Our Library Welcomes You</h1>
+            <p>Where knowledge meets imagination</p>
+        </div>
+        
+        <div class="quotes-section">
+            <div class="quote-container">
+                <p class="quote-text" id="quoteText"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Section -->
+    <div class="right-section">
+        <div class="login-container">
+            <div class="login-header">
+                <h2>Welcome Back</h2>
+                <p>Please login to your account</p>
+            </div>
+            
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="id">User ID</label>
+                    <input id="id" type="text" placeholder="Enter your ID" autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" placeholder="Enter your password" autocomplete="current-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Login As</label>
+                    <select id="role">
+                        <option value="">Select your role</option>
+                        <option value="admins">Admin</option>
+                        <option value="members">Member</option>
+                    </select>
+                </div>
+                
+                <button id="loginBtn" class="login-btn">
+                    Login
+                </button>
+                
+                <div id="responseBox" class="response-box"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funny library quotes
+const quotes = [
+    "\"A room without books is like a body without a soul.\" - Marcus Tullius Cicero",
+    "\"I have always imagined that Paradise will be a kind of library.\" - Jorge Luis Borges",
+    "\"Books are a uniquely portable magic.\" - Stephen King",
+    "\"So many books, so little time.\" - Frank Zappa",
+    "\"The only thing you absolutely have to know is the location of the library.\" - Albert Einstein",
+    "\"A library is not a luxury but one of the necessities of life.\" - Henry Ward Beecher",
+    "\"Without libraries what have we? We have no past and no future.\" - Ray Bradbury",
+    "\"Libraries: The medicine chest of the soul.\" - Ancient Egyptian inscription",
+    "\"Reading is dreaming with open eyes.\" - Anonymous",
+    "\"A book is a dream that you hold in your hand.\" - Neil Gaiman",
+    "\"I lived in books more than I lived anywhere else.\" - Neil Gaiman",
+    "\"Books are the quietest and most constant of friends.\" - Charles William Eliot",
+    "\"The library is inhabited by spirits that come out of the pages at night.\" - Isabel Allende",
+    "\"A library is infinity under a roof.\" - Gail Carson Levine"
+];
+
+let currentQuoteIndex = 0;
+const quoteElement = document.getElementById('quoteText');
+
+// Function to cycle through quotes
+function showNextQuote() {
+    quoteElement.textContent = quotes[currentQuoteIndex];
+    currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+}
+
+// Show first quote immediately
+showNextQuote();
+
+// Change quote every 8 seconds (matches animation duration)
+setInterval(showNextQuote, 8000);
+
+// Store user profile data for later use
+const userProfile = {
+    save: (data) => {
+        const profileData = {
+            userId: data.admin_id || data.member_id,
+            role: data.role,
+            timestamp: new Date().toISOString(),
+            ...data
+        };
+        sessionStorage.setItem('userProfile', JSON.stringify(profileData));
+        return profileData;
+    },
+    get: () => {
+        const stored = sessionStorage.getItem('userProfile');
+        return stored ? JSON.parse(stored) : null;
+    },
+    clear: () => {
+        sessionStorage.removeItem('userProfile');
+    }
+};
+
+document.getElementById("loginBtn").addEventListener("click", handleLogin);
+
+// Allow Enter key to submit
+document.querySelectorAll('input, select').forEach(element => {
+    element.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleLogin();
+    });
+});
+
+async function handleLogin() {
+    const id = document.getElementById("id").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const role = document.getElementById("role").value;
+    const loginBtn = document.getElementById("loginBtn");
+    const responseBox = document.getElementById("responseBox");
+    
+    // Validation
+    if (!id || !password || !role) {
+        showResponse("Please fill in all fields.", "error");
+        return;
+    }
+    
+    // Show loading state
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = 'Logging in<span class="loading-spinner"></span>';
+    responseBox.classList.remove('show');
+    
+    try {
+        const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, password, role })
+        });
+        
+        const data = await res.json();
+        
+        if (data.status === "success") {
+            // Save user profile data
+            const savedProfile = userProfile.save(data);
+            
+            showResponse("Login successful! Redirecting...", "success");
+            
+            // Redirect after brief delay
+            setTimeout(() => {
+                if (data.role === "admins") {
+                    window.location.href = "/admin_dashboard?user=" + data.admin_id;
+                } else {
+                    window.location.href = "/member_dashboard?user=" + data.member_id;
+                }
+            }, 800);
+        } else {
+            showResponse(data.message || "Login failed. Please check your credentials.", "error");
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Login';
+        }
+    } catch (err) {
+        showResponse("Connection error: " + err.message, "error");
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+    }
+}
+
+function showResponse(message, type) {
+    const responseBox = document.getElementById("responseBox");
+    responseBox.textContent = message;
+    responseBox.className = `response-box ${type} show`;
+}
+
+// Clear any existing profile data on page load
+window.addEventListener('load', () => {
+    // Only clear if not redirected from a successful login
+    if (!document.referrer.includes('dashboard')) {
+        userProfile.clear();
+    }
+});
+</script>
+</body>
+</html>
